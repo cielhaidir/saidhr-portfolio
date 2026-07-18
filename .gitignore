@@ -8,6 +8,8 @@
 !assets/
 !assets/projects/
 !assets/projects/*.png
+!scripts/
+!scripts/sync-activity.py
 
 # Never publish local credentials or runtime data
 .cloudflared/
