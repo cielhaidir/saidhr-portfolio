@@ -76,14 +76,22 @@ def main() -> int:
             "source": "Public GitHub contribution pages and GitLab calendar endpoint",
         },
     }
-    serialized = json.dumps(snapshot, indent=2) + "\n"
     previous = OUT.read_text() if OUT.exists() else ""
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text(serialized)
+    previous_snapshot = json.loads(previous) if previous else None
+    # The generated timestamp must not create a daily no-op commit.
+    previous_payload = dict(previous_snapshot) if previous_snapshot else None
+    if previous_payload:
+        previous_payload.get("meta", {}).pop("generatedAt", None)
+    next_payload = dict(snapshot)
+    next_payload.get("meta", {}).pop("generatedAt", None)
+    changed = next_payload != previous_payload
+    if changed:
+        OUT.parent.mkdir(parents=True, exist_ok=True)
+        OUT.write_text(json.dumps(snapshot, indent=2) + "\n")
     print(
         json.dumps(
             {
-                "changed": serialized != previous,
+                "changed": changed,
                 "github_total": sum(github.values()),
                 "gitlab_total": sum(gitlab.values()),
                 "combined_total": sum(github.values()) + sum(gitlab.values()),
