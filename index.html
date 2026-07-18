@@ -1,0 +1,649 @@
+<!doctype html>
+<!--
+  OD web-prototype seed.
+
+  Copy this file to <project>/index.html, then fill `<main id="content">` by
+  pasting blocks from `references/layouts.md`. Every class referenced in
+  layouts.md is defined here — DO NOT remove unused ones unless you also
+  remove their callers, and DO NOT invent new global classes (use inline
+  style="…" for one-off tweaks).
+
+  Theme tokens at the top of `<style>` are the *only* place to set palette
+  and type. They map cleanly onto a DESIGN.md — when an active design system
+  is injected, swap these six variables and everything reflows.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Andi Said Haidir Ali · Full-stack Developer & Automation Engineer</title>
+  <style>
+    /* ─── tokens ─────────────────────────────────────────────────────────
+       Six variables. Bind them to the active DESIGN.md and stop.
+       Do not introduce raw hex anywhere else in this file. */
+    :root {
+      --bg:      #ffffff;   /* page background — never #fff */
+      --surface: #ffffff;   /* cards, modals, raised areas */
+      --fg:      #171717;   /* primary text — never #000 */
+      --muted:   #4d4d4d;   /* secondary text, captions */
+      --border:  #ebebeb;   /* hairlines, dividers */
+      --accent:  #0070f3;   /* one accent — used at most 2× per screen */
+
+      /* derived — do not change */
+      --accent-soft: color-mix(in oklch, var(--accent) 14%, transparent);
+      --fg-soft:     color-mix(in oklch, var(--fg) 6%, transparent);
+
+      /* type — display = serif (default), body = sans, mono for numerics */
+      --font-display: Arial, 'Segoe UI', system-ui, sans-serif;
+      --font-body:    Arial, 'Segoe UI', system-ui, sans-serif;
+      --font-mono:    ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, monospace;
+
+      /* scale — clamp() so it works at 1280, 1440, 1920 without media queries */
+      --fs-h1: clamp(44px, 6vw, 76px);
+      --fs-h2: clamp(32px, 4vw, 48px);
+      --fs-h3: 22px;
+      --fs-lead: 19px;
+      --fs-body: 16px;
+      --fs-meta: 13px;
+
+      /* spacing — 8-point grid */
+      --gap-xs: 8px;
+      --gap-sm: 12px;
+      --gap-md: 20px;
+      --gap-lg: 32px;
+      --gap-xl: 56px;
+      --gap-2xl: 96px;
+      --container: 1120px;
+      --gutter: 32px;
+
+      --radius: 10px;
+      --radius-lg: 16px;
+    }
+
+    /* ─── reset & base ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font-family: var(--font-body);
+      font-size: var(--fs-body);
+      line-height: 1.55;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+    img, svg { display: block; max-width: 100%; }
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; cursor: pointer; }
+    p { text-wrap: pretty; }
+    h1, h2, h3, h4 { text-wrap: balance; }
+
+    /* ─── layout primitives ─────────────────────────────────────────── */
+    .container {
+      max-width: var(--container);
+      margin-inline: auto;
+      padding-inline: var(--gutter);
+    }
+    .section {
+      padding-block: clamp(48px, 8vw, var(--gap-2xl));
+    }
+    .section + .section { border-top: 1px solid var(--border); }
+    .stack { display: flex; flex-direction: column; }
+    .stack > * + * { margin-top: var(--gap-md); }
+    .row { display: flex; align-items: center; gap: var(--gap-md); }
+    .row-between { display: flex; align-items: center; justify-content: space-between; gap: var(--gap-md); }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--gap-lg); }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gap-lg); }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap-md); }
+    .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: var(--gap-xl); align-items: start; }
+    .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: var(--gap-xl); align-items: start; }
+    @media (max-width: 920px) {
+      .grid-2, .grid-3, .grid-4, .grid-2-1, .grid-1-2 { grid-template-columns: 1fr; }
+    }
+
+    /* ─── type ──────────────────────────────────────────────────────── */
+    .h1, h1 { font-family: var(--font-display); font-size: var(--fs-h1); line-height: 1.04; letter-spacing: -0.02em; margin: 0; }
+    .h2, h2 { font-family: var(--font-display); font-size: var(--fs-h2); line-height: 1.1; letter-spacing: -0.015em; margin: 0; }
+    .h3, h3 { font-size: var(--fs-h3); font-weight: 600; line-height: 1.3; letter-spacing: -0.005em; margin: 0; }
+    .lead   { font-size: var(--fs-lead); line-height: 1.55; color: var(--muted); max-width: 60ch; margin: 0; }
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 0 0 var(--gap-md);
+    }
+    .meta { font-family: var(--font-mono); font-size: var(--fs-meta); color: var(--muted); }
+    .num  { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+    /* ─── chrome: nav + footer ──────────────────────────────────────── */
+    .topnav {
+      position: sticky; top: 0; z-index: 10;
+      background: color-mix(in oklch, var(--bg) 92%, transparent);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topnav-inner { display: flex; align-items: center; justify-content: space-between; padding-block: 14px; }
+    .topnav .logo { font-family: var(--font-display); font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+    .topnav nav { display: flex; gap: var(--gap-lg); }
+    .topnav nav a { font-size: 14px; color: var(--muted); }
+    .topnav nav a:hover { color: var(--fg); }
+    .pagefoot { padding-block: var(--gap-xl); color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+    .pagefoot .row-between { flex-wrap: wrap; gap: var(--gap-md); }
+
+    /* ─── buttons ───────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 20px;
+      border-radius: var(--radius);
+      border: 1px solid transparent;
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+      transition: transform 0.05s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+    .btn:active { transform: translateY(1px); }
+    .btn-primary { background: var(--accent); color: var(--surface); border-color: var(--accent); }
+    .btn-primary:hover { background: color-mix(in oklch, var(--accent) 88%, black); }
+    .btn-secondary { background: transparent; color: var(--fg); border-color: var(--border); }
+    .btn-secondary:hover { border-color: var(--fg); }
+    .btn-ghost { background: transparent; color: var(--fg); border-color: transparent; padding-inline: 8px; }
+    .btn-ghost:hover { color: var(--accent); }
+    .btn-arrow::after { content: '→'; transition: transform 0.15s ease; }
+    .btn-arrow:hover::after { transform: translateX(2px); }
+
+    /* ─── card / surface ────────────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+    }
+    .card-flat { background: transparent; border: 0; padding: 0; }
+    .card-rule { background: transparent; border: 0; border-top: 1px solid var(--fg); padding: 24px 0 0; border-radius: 0; }
+
+    /* ─── feature cell (icon + h3 + p) ──────────────────────────────── */
+    .feature .feature-mark {
+      width: 36px; height: 36px;
+      display: grid; place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--accent);
+      margin-bottom: var(--gap-md);
+    }
+    .feature .feature-mark svg { width: 18px; height: 18px; }
+    .feature h3 { margin-bottom: 6px; }
+    .feature p  { margin: 0; color: var(--muted); font-size: 15px; }
+
+    /* ─── stat (big number + label) ─────────────────────────────────── */
+    .stat .stat-num {
+      font-family: var(--font-display);
+      font-size: clamp(56px, 8vw, 96px);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .stat .stat-label { color: var(--muted); font-size: 14px; margin-top: 8px; max-width: 24ch; }
+    .stat .stat-unit  { font-size: 0.5em; opacity: 0.7; margin-left: 2px; }
+
+    /* ─── quote / testimonial ───────────────────────────────────────── */
+    .quote {
+      font-family: var(--font-display);
+      font-size: clamp(24px, 2.6vw, 32px);
+      line-height: 1.32;
+      letter-spacing: -0.01em;
+      max-width: 28ch;
+    }
+    .quote-author { color: var(--muted); font-size: 14px; margin-top: var(--gap-md); }
+    .quote-mark   {
+      font-family: var(--font-display);
+      font-size: 140px; line-height: 0.7;
+      color: var(--accent); opacity: 0.18;
+      margin-bottom: -28px;
+    }
+
+    /* ─── pill / badge / tag ────────────────────────────────────────── */
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .tag {
+      display: inline-flex; align-items: center;
+      padding: 4px 10px;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 12px;
+    }
+
+    /* ─── form field ────────────────────────────────────────────────── */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 13px; color: var(--muted); }
+    .input, .textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--fg);
+      font: inherit;
+      font-size: 15px;
+    }
+    .input:focus, .textarea:focus {
+      outline: 2px solid var(--accent-soft);
+      border-color: var(--accent);
+    }
+    .textarea { min-height: 96px; resize: vertical; line-height: 1.55; }
+
+    /* ─── table (data-style, no chrome) ─────────────────────────────── */
+    .ds-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .ds-table th, .ds-table td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    .ds-table th { color: var(--muted); font-weight: 500; font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+    .ds-table tbody tr:hover { background: var(--fg-soft); }
+    .ds-table .num-col { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+
+    /* ─── image placeholder (DS-tinted block, never broken <img>) ──── */
+    .ph-img {
+      background:
+        linear-gradient(135deg, var(--accent-soft), var(--fg-soft)),
+        var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      aspect-ratio: 16 / 10;
+      display: grid; place-items: center;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+    }
+    .ph-img.square    { aspect-ratio: 1 / 1; }
+    .ph-img.portrait  { aspect-ratio: 3 / 4; }
+    .ph-img.wide      { aspect-ratio: 16 / 9; }
+
+    /* ─── divider ───────────────────────────────────────────────────── */
+    .rule  { border: 0; border-top: 1px solid var(--border); margin: 0; }
+    .rule-strong { border: 0; border-top: 1px solid var(--fg); margin: 0; }
+
+    /* ─── hero variants used by layouts.md ──────────────────────────── */
+    .hero          { padding-block: clamp(80px, 12vw, 160px); }
+    .hero-center   { text-align: center; max-width: 32ch; margin-inline: auto; }
+    .hero h1       { margin-bottom: var(--gap-md); }
+    .hero .lead    { margin-bottom: var(--gap-lg); }
+    .hero-cta      { display: inline-flex; gap: var(--gap-sm); flex-wrap: wrap; }
+    .hero-center .hero-cta { justify-content: center; }
+    .hero-split    { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap-2xl); align-items: center; }
+    @media (max-width: 920px) { .hero-split { grid-template-columns: 1fr; } }
+
+    /* ─── log row (newsletter, blog list, changelog) ────────────────── */
+    .log-row { display: grid; grid-template-columns: 120px 1fr 100px; gap: var(--gap-lg); padding: 22px 0; border-top: 1px solid var(--border); align-items: baseline; }
+    .log-row .meta { color: var(--muted); }
+    .log-row h3 { font-size: 19px; }
+    .log-row .pull { text-align: right; }
+    @media (max-width: 920px) {
+      .log-row { grid-template-columns: 1fr; gap: 8px; }
+      .log-row .pull { text-align: left; }
+    }
+    @media (max-width: 600px) {
+      :root { --gutter: 20px; }
+      .topnav-inner { flex-wrap: wrap; }
+      .topnav nav { order: 3; width: 100%; justify-content: space-between; gap: 12px; }
+      .topnav nav a { font-size: 13px; }
+      .hero { padding-block: 64px; }
+      .hero h1 { font-size: clamp(40px, 13vw, 58px); }
+      .btn { padding: 10px 14px; }
+    }
+    /* ─── technology inventory ─────────────────────────────────────── */
+    .technology-section { overflow: hidden; }
+    .technology-heading { max-width: 58ch; margin-bottom: clamp(32px, 5vw, 52px); }
+    .technology-heading .lead { margin-top: var(--gap-md); }
+    .technology-groups { display: grid; gap: clamp(36px, 5vw, 56px); }
+    .technology-group { border-top: 1px solid var(--fg); padding-top: var(--gap-md); }
+    .technology-group-title { display: flex; align-items: baseline; justify-content: space-between; gap: var(--gap-md); margin: 0 0 var(--gap-md); }
+    .technology-group-title h3 { font-size: 18px; }
+    .technology-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border: 1px solid var(--border); border-right: 0; border-bottom: 0; }
+    .technology-item { min-height: 108px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; gap: var(--gap-sm); padding: 16px; text-align: center; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--surface); transition: background 0.2s ease, color 0.2s ease, transform 0.2s cubic-bezier(.22, .61, .36, 1); }
+    .technology-item:hover { background: var(--fg); color: var(--surface); transform: translateY(-3px); }
+    .technology-icon { position: relative; display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); color: var(--fg); overflow: hidden; }
+    .technology-icon img { position: relative; z-index: 1; width: 20px; height: 20px; object-fit: contain; }
+    .technology-icon-fallback { position: absolute; inset: 0; display: grid; place-items: center; font: 700 10px/1 var(--font-mono); letter-spacing: -0.08em; }
+    .technology-icon-fallback[hidden] { display: none; }
+    .technology-icon.concept { background: var(--fg-soft); color: var(--fg); }
+    .technology-icon.concept svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .technology-item:hover .technology-icon { border-color: color-mix(in oklch, var(--surface) 38%, transparent); }
+    .technology-item:hover .technology-icon.concept { background: color-mix(in oklch, var(--surface) 12%, transparent); color: var(--surface); }
+    .technology-label { font-size: 14px; font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; }
+    @media (max-width: 920px) { .technology-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+    @media (max-width: 600px) { .technology-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .technology-item { min-height: 100px; padding: 14px; } .topnav nav .nav-skills { display: none; } }
+
+    .activity-toolbar { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin:24px 0 16px; }
+    .activity-filters { display:flex; gap:8px; flex-wrap:wrap; }
+    .activity-filter { border:1px solid var(--border); background:var(--surface); color:var(--muted); border-radius:999px; padding:6px 12px; font:500 12px var(--font-mono); cursor:pointer; }
+    .activity-filter[aria-pressed="true"] { background:var(--fg); color:var(--surface); border-color:var(--fg); }
+    .activity-scroll { overflow-x:auto; padding:4px 2px 12px; }
+    .activity-grid { display:grid; grid-template-rows:repeat(7, 12px); grid-template-columns:repeat(53, minmax(0, 1fr)); grid-auto-flow:column; gap:4px; width:100%; min-width:760px; }
+    .activity-cell { width:100%; height:12px; min-width:0; border:0; border-radius:3px; background:var(--border); cursor:pointer; padding:0; }
+    .activity-cell[data-level="1"] { background:color-mix(in oklch, var(--accent) 28%, var(--surface)); }
+    .activity-cell[data-level="2"] { background:color-mix(in oklch, var(--accent) 48%, var(--surface)); }
+    .activity-cell[data-level="3"] { background:color-mix(in oklch, var(--accent) 70%, var(--surface)); }
+    .activity-cell[data-level="4"] { background:var(--accent); }
+    .activity-cell[data-platform="gitlab"] { --accent:#fc6d26; }
+    .activity-legend { display:flex; align-items:center; gap:6px; color:var(--muted); font:12px var(--font-mono); }
+    .activity-legend .activity-cell { cursor:default; }
+    .activity-summary { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:20px; }
+    .activity-summary > div { text-align:center; }
+    .activity-summary strong { display:block; font:600 24px var(--font-display); }
+    .activity-summary span { color:var(--muted); font:12px var(--font-mono); }
+    .activity-shortcuts { justify-content:center; }
+    .activity-tooltip { min-height:22px; margin-top:12px; color:var(--muted); font:13px var(--font-mono); }
+    .activity-years { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 16px; }
+    .activity-years .activity-year-all { margin-left:auto; }
+    .activity-year { border:1px solid var(--border); background:var(--surface); color:var(--muted); border-radius:999px; padding:6px 12px; font:500 12px var(--font-mono); cursor:pointer; }
+    .activity-year[aria-pressed="true"] { background:var(--fg); color:var(--surface); border-color:var(--fg); }
+    .activity-year-block + .activity-year-block { margin-top:28px; }
+    .activity-year-title { margin:0 0 10px; font:600 16px var(--font-display); }
+    .activity-months { display:grid; grid-template-columns:repeat(12, minmax(0, 1fr)); width:100%; min-width:760px; margin:0 0 6px; color:var(--muted); font:11px var(--font-mono); }
+    @media (max-width:600px) { .activity-summary { grid-template-columns:1fr 1fr; } }
+
+    /* ─── motion: restrained, transform-only where possible ─────────── */
+    .hero-split > div:first-child { animation: hero-copy-in 0.7s cubic-bezier(.22, .61, .36, 1) both; }
+    .hero-split > .card { animation: hero-photo-in 0.8s cubic-bezier(.22, .61, .36, 1) 0.1s both; }
+    .hero-split > .card img { transition: transform 0.45s cubic-bezier(.22, .61, .36, 1), filter 0.45s ease; }
+    .hero-split > .card:hover img { transform: scale(1.025); filter: contrast(1.02); }
+    @keyframes hero-copy-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes hero-photo-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .motion-ready .reveal { opacity: 0; transform: translateY(12px); transition: opacity 0.5s ease, transform 0.5s cubic-bezier(.22, .61, .36, 1); transition-delay: var(--reveal-delay, 0ms); }
+    .motion-ready .reveal.is-visible { opacity: 1; transform: translateY(0); }
+    /* ─── selected work ─────────────────────────────────────────────── */
+    .project-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--gap-lg); }
+    .project-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+    .project-image { aspect-ratio: 16 / 9; overflow: hidden; background: var(--fg-soft); border-bottom: 1px solid var(--border); }
+    .project-image img { width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform 0.45s cubic-bezier(.22, .61, .36, 1); }
+    .project-card:hover .project-image img { transform: scale(1.03); }
+    .project-placeholder { display: grid; place-items: center; padding: var(--gap-md); color: var(--muted); font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.04em; text-align: center; background: linear-gradient(135deg, var(--accent-soft), var(--fg-soft)), var(--surface); }
+    @media (max-width: 920px) { .project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 600px) { .project-grid { grid-template-columns: 1fr; } }
+    .project-content { display: flex; flex: 1; flex-direction: column; padding: 24px 28px 28px; }
+    .project-content h3 { margin-top: 16px; }
+    .project-content > p { margin: 10px 0 0; color: var(--muted); }
+    .project-features { margin: 18px 0 0; padding: 0; list-style: none; color: var(--muted); font-size: 14px; }
+    .project-features li { position: relative; padding-left: 14px; }
+    .project-features li::before { content: '—'; position: absolute; left: 0; color: var(--accent); }
+    #work .card { transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease; }
+    #work .card:hover { transform: translateY(-4px); border-color: color-mix(in oklch, var(--fg) 28%, var(--border)); box-shadow: 0 12px 28px var(--fg-soft); }
+    .activity-cell { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .activity-cell:not(.activity-legend .activity-cell):hover, .activity-cell:focus-visible { transform: scale(1.28); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--fg); outline: 0; position: relative; z-index: 1; }
+    @media (max-width:600px) {
+      .stat { text-align: center; }
+      .stat .stat-label { margin-inline: auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+      .motion-ready .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topnav" data-od-id="topnav">
+    <div class="container topnav-inner">
+      <a class="logo" href="#top">SAID / DEV</a>
+      <nav aria-label="Main navigation">
+        <a href="#work">Work</a>
+        <a href="#experience">Experience</a>
+        <a class="nav-skills" href="#technologies">Skills</a>
+        <a href="#activity">Activity</a>
+      </nav>
+      <a class="btn btn-primary" href="mailto:saidhaidirali987@gmail.com">Let’s talk</a>
+    </div>
+  </header>
+
+  <main id="content">
+    <section class="section hero" data-od-id="hero" id="top">
+      <div class="container hero-split">
+        <div>
+          <p class="eyebrow">FULL-STACK DEVELOPER · AUTOMATION ENGINEER</p>
+          <h1>I build reliable software for real-world operations.</h1>
+          <p class="lead" style="margin-top:20px;">I’m Andi Said Haidir Ali. I build web applications, backend systems, workflow automations, and cloud deployments that help teams work better.</p>
+          <div class="hero-cta" style="margin-top:28px;">
+            <a class="btn btn-primary" href="#work">See selected work</a>
+            <a class="btn btn-secondary" href="/CV%20ANDI%20SAID%20HAIDIR%20ALI_EN.pdf">Download CV</a>
+          </div>
+          <p class="meta" style="margin-top:20px;">Makassar, Indonesia · 3+ years building software</p>
+        </div>
+        <div class="card" aria-label="Profile photo" style="padding:0;overflow:hidden;">
+          <img src="https://avatars.githubusercontent.com/u/116857323?v=4" alt="Andi Said Haidir Ali" style="width:100%;height:100%;min-height:360px;object-fit:cover;object-position:center;" />
+        </div>
+      </div>
+    </section>
+
+    <section class="section" data-od-id="stats">
+      <div class="container">
+        <p class="eyebrow" style="margin-bottom:40px;">BY THE NUMBERS · SELECTED IMPACT</p>
+        <div class="grid-4">
+          <div class="stat"><div class="stat-num num">3<span class="stat-unit">+</span></div><p class="stat-label">years building software across professional and independent work.</p></div>
+          <div class="stat"><div class="stat-num num">10<span class="stat-unit">+</span></div><p class="stat-label">client projects delivered, from applications to infrastructure.</p></div>
+          <div class="stat"><div class="stat-num num">5<span class="stat-unit">k+</span></div><p class="stat-label">active users supported across campus academic systems.</p></div>
+          <div class="stat"><div class="stat-num num">99<span class="stat-unit">%</span></div><p class="stat-label">uptime achieved for maintained campus and client systems.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" data-od-id="about">
+      <div class="container grid-1-2">
+        <div><p class="eyebrow">ABOUT</p><h2>Build, ship, learn, contribute.</h2></div>
+        <div class="stack">
+          <p class="lead">I’m a full-stack developer and automation engineer with a background in computer and network engineering. My work spans internal applications, client products, API integrations, DevOps, and production support.</p>
+          <p style="color:var(--muted);">I enjoy translating operational problems into software that is maintainable, observable, and useful in the real world. I’m equally comfortable writing application code, configuring infrastructure, and helping a team move from manual work to reliable automation.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" data-od-id="work" id="work">
+      <div class="container stack" style="gap:56px;">
+        <div class="row-between"><div><p class="eyebrow">SELECTED WORK</p><h2>Projects with a job to do.</h2></div><span class="meta">PORTFOLIO · 01—15</span></div>
+        <div class="project-grid">
+          <article class="card project-card">
+            <div class="project-image"><img src="/assets/projects/tifa-travel.png" alt="Tifa Travel Integrated System reservations interface" loading="lazy" /></div>
+            <div class="project-content"><span class="pill">INTEGRATED SYSTEM</span><h3>Tifa Travel Integrated System</h3><p>A travel operations system for hotel, flight, transport, and tour reservations.</p><ul class="project-features"><li>Invoicing, accounts payable and receivable, and journals</li><li>Customer invoice portal and reporting</li></ul></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image"><img src="/assets/projects/fit-infinity.png" alt="Fit Infinity Integrated System dashboard" loading="lazy" /></div>
+            <div class="project-content"><span class="pill">INTEGRATED SYSTEM</span><h3>Fit Infinity Integrated System</h3><p>A gym management system covering membership, personal training, sessions, classes, and point of sale.</p><ul class="project-features"><li>AI workout and nutrition recommendations</li><li>Invoices, accounts payable and receivable, journals, and payment gateway</li></ul></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image"><img src="/assets/projects/research-system.png" alt="PNUP research and community service information system interface" loading="lazy" /></div>
+            <div class="project-content"><span class="pill">PNUP</span><h3>Sistem Informasi Penelitian dan Pengabdian Masyarakat</h3><p>PNUP administration for research, community service, and intellectual property.</p><ul class="project-features"><li>Monev and reviewer workflows</li><li>Role-based access and real-time notifications</li></ul></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image"><img src="/assets/projects/lion-parcel.png" alt="Lion Parcel financial and operational dashboard" loading="lazy" /></div>
+            <div class="project-content"><span class="pill">DASHBOARD</span><h3>Lion Parcel Dashboard</h3><p>A financial and operational dashboard for accounts receivable, accounts payable, and profit.</p><ul class="project-features"><li>Real-time transaction trends</li></ul></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image"><img src="/assets/projects/pnup-academic.png" alt="Sistem Akademik Terintegrasi PNUP academic administration dashboard" loading="lazy" /></div>
+            <div class="project-content"><span class="pill">FRONTEND DEVELOPER</span><h3>Sistem Akademik Terintegrasi PNUP</h3><p>An academic administration dashboard for integrated PNUP academic operations.</p></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image"><img src="/assets/projects/pnup-employee.png" alt="Sistem Informasi Kepegawaian PNUP employee data dashboard" loading="lazy" /></div>
+            <div class="project-content"><span class="pill">FRONTEND DEVELOPER</span><h3>Sistem Informasi Kepegawaian PNUP</h3><p>An employee data dashboard for PNUP personnel information.</p></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image"><img src="/assets/projects/pnup-student.png" alt="Sistem Informasi Kemahasiswaan PNUP student affairs dashboard" loading="lazy" /></div>
+            <div class="project-content"><span class="pill">FRONTEND DEVELOPER</span><h3>Sistem Informasi Kemahasiswaan PNUP</h3><p>A student affairs dashboard covering organizations and scholarships.</p></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image"><img src="/assets/projects/pnup-cooperation.png" alt="Sistem Informasi Kerjasama PNUP institutional cooperation and MoU dashboard" loading="lazy" /></div>
+            <div class="project-content"><span class="pill">FRONTEND DEVELOPER</span><h3>Sistem Informasi Kerjasama PNUP</h3><p>An institutional cooperation and MoU dashboard for PNUP.</p></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image"><img src="/assets/projects/pnup-finance.png" alt="Sistem Informasi Keuangan PNUP finance dashboard" loading="lazy" /></div>
+            <div class="project-content"><span class="pill">FRONTEND DEVELOPER</span><h3>Sistem Informasi Keuangan PNUP</h3><p>A finance dashboard for UKT and expenditure information.</p></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image"><img src="/assets/projects/pnup-quality.png" alt="Sistem Informasi Penjamin Mutu PNUP quality assurance SSO portal" loading="lazy" /></div>
+            <div class="project-content"><span class="pill">FULL-STACK DEVELOPER</span><h3>Sistem Informasi Penjamin Mutu PNUP</h3><p>A quality assurance SSO portal for PNUP.</p></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image project-placeholder" role="img" aria-label="Image coming soon for Smartschool Backend">Image coming soon</div>
+            <div class="project-content"><span class="pill">GO</span><h3>Smartschool Backend</h3></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image project-placeholder" role="img" aria-label="Image coming soon for Network Access Control Frontend">Image coming soon</div>
+            <div class="project-content"><span class="pill">VUE.JS</span><h3>Network Access Control Frontend</h3></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image project-placeholder" role="img" aria-label="Image coming soon for E-Kinerja">Image coming soon</div>
+            <div class="project-content"><span class="pill">NODE.JS + VUE.JS</span><h3>E-Kinerja</h3></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image project-placeholder" role="img" aria-label="Image coming soon for Digital Signage">Image coming soon</div>
+            <div class="project-content"><span class="pill">NEXT.JS</span><h3>Digital Signage</h3></div>
+          </article>
+          <article class="card project-card">
+            <div class="project-image project-placeholder" role="img" aria-label="Image coming soon for Hospital Information System">Image coming soon</div>
+            <div class="project-content"><span class="pill">CODEIGNITER 3</span><h3>Hospital Information System</h3></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" data-od-id="experience" id="experience">
+      <div class="container">
+        <div class="row-between" style="margin-bottom:32px;"><div><p class="eyebrow">EXPERIENCE</p><h2>From systems to shipping.</h2></div><span class="meta">2024—NOW</span></div>
+        <article class="log-row"><span class="meta">2024—now</span><div><h3>Software Developer · PT Eguard Teknologi Indonesia</h3><p style="margin:4px 0 0;color:var(--muted);">Developing web, backend, multi-platform, and AI automation systems. Launched 5+ web applications with Docker and CI/CD.</p></div><span class="pull meta">FULL-TIME</span></article>
+        <article class="log-row"><span class="meta">2024—now</span><div><h3>Independent Contractor · IT Solutions Provider</h3><p style="margin:4px 0 0;color:var(--muted);">Managed 10+ projects end-to-end: requirements, system design, development, deployment, and client support.</p></div><span class="pull meta">INDEPENDENT</span></article>
+        <article class="log-row"><span class="meta">2024</span><div><h3>IT Support Intern · PT Hadji Kalla Holding</h3><p style="margin:4px 0 0;color:var(--muted);">Best Intern. Implemented ELK Stack, Outline, and a GitLab CI/CD pipeline that improved deployment efficiency by up to 50%.</p></div><span class="pull meta">MSIB BATCH 7</span></article>
+      </div>
+    </section>
+
+    <section class="section" data-od-id="skills">
+      <div class="container grid-2-1">
+        <div><p class="eyebrow">TOOLBOX</p><h2>Broad enough to own the whole path.</h2><p class="lead" style="margin-top:20px;">Application code, data, infrastructure, and the engineering practices that keep them working together.</p></div>
+        <div class="card stack"><div><strong>Primary stack</strong><p class="meta">TypeScript · JavaScript · Go · React · Next.js · Laravel · Node.js · PostgreSQL · Docker</p></div><div><strong>Also experienced with</strong><p class="meta">Rust · Vue · React Native · NestJS · Python · MySQL · MongoDB · n8n · GCP · AWS · Jenkins · Proxmox</p></div><div><strong>Engineering practices</strong><p class="meta">API integration · System design · Cloud deployment · CI/CD · Production support · Automation · Mentoring</p></div></div>
+      </div>
+    </section>
+
+    <section class="section technology-section" data-od-id="technologies" id="technologies" aria-labelledby="technologies-title">
+      <div class="container">
+        <div class="technology-heading">
+          <p class="eyebrow">TECHNOLOGIES</p>
+          <h2 id="technologies-title">The tools behind the work.</h2>
+          <p class="lead">A complete, production-focused toolkit for building dependable products—from interface and data to infrastructure and automation.</p>
+        </div>
+        <div class="technology-groups">
+          <section class="technology-group" aria-labelledby="technology-group-0">
+            <div class="technology-group-title"><h3 id="technology-group-0">Programming Languages</h3><span class="meta">08 TOOLS</span></div>
+            <div class="technology-grid" role="list">
+              <div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">TS</span><img src="https://cdn.simpleicons.org/typescript" alt="TypeScript logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">TypeScript</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">JS</span><img src="https://cdn.simpleicons.org/javascript" alt="JavaScript logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">JavaScript</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">GO</span><img src="https://cdn.simpleicons.org/go" alt="Go logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Go</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">PHP</span><img src="https://cdn.simpleicons.org/php" alt="PHP logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">PHP</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">JV</span><img src="https://cdn.simpleicons.org/openjdk" alt="Java logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Java</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">PY</span><img src="https://cdn.simpleicons.org/python" alt="Python logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Python</span></div><div class="technology-item" role="listitem"><span class="technology-icon concept" aria-label="SQL concept"><svg viewBox="0 0 24 24"><path d="m8 6-4 4 4 4M16 6l4 4-4 4M14 4l-4 12"/></svg></span><span class="technology-label">SQL</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">RS</span><img src="https://cdn.simpleicons.org/rust" alt="Rust logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Rust</span></div>
+            </div>
+          </section><section class="technology-group" aria-labelledby="technology-group-1">
+            <div class="technology-group-title"><h3 id="technology-group-1">Frontend</h3><span class="meta">10 TOOLS</span></div>
+            <div class="technology-grid" role="list">
+              <div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">R</span><img src="https://cdn.simpleicons.org/react" alt="React logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">React</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">V</span><img src="https://cdn.simpleicons.org/vuedotjs" alt="Vue.js logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Vue.js</span></div><div class="technology-item" role="listitem"><span class="technology-icon concept" aria-label="Blade concept"><svg viewBox="0 0 24 24"><path d="m8 6-4 4 4 4M16 6l4 4-4 4M14 4l-4 12"/></svg></span><span class="technology-label">Blade</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">NX</span><img src="https://cdn.simpleicons.org/nextdotjs" alt="Next.js logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Next.js</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">LW</span><img src="https://cdn.simpleicons.org/livewire" alt="Livewire logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Livewire</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">CSS</span><img src="https://cdn.simpleicons.org/css" alt="CSS logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">CSS</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">B</span><img src="https://cdn.simpleicons.org/bootstrap" alt="Bootstrap logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Bootstrap</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">TW</span><img src="https://cdn.simpleicons.org/tailwindcss" alt="Tailwind CSS logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Tailwind CSS</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">T</span><img src="https://cdn.simpleicons.org/tauri" alt="Tauri logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Tauri</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">RN</span><img src="https://cdn.simpleicons.org/react" alt="React Native logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">React Native</span></div>
+            </div>
+          </section><section class="technology-group" aria-labelledby="technology-group-2">
+            <div class="technology-group-title"><h3 id="technology-group-2">Backend</h3><span class="meta">05 TOOLS</span></div>
+            <div class="technology-grid" role="list">
+              <div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">ND</span><img src="https://cdn.simpleicons.org/nodedotjs" alt="Node.js logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Node.js</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">N</span><img src="https://cdn.simpleicons.org/nestjs" alt="NestJS logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">NestJS</span></div><div class="technology-item" role="listitem"><span class="technology-icon concept" aria-label="Go Fiber concept"><svg viewBox="0 0 24 24"><path d="M4 15c4-8 10-10 16-10-2 5-6 10-13 11"/><path d="M5 19c3-5 7-8 12-10"/></svg></span><span class="technology-label">Go Fiber</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">L</span><img src="https://cdn.simpleicons.org/laravel" alt="Laravel logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Laravel</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">F</span><img src="https://cdn.simpleicons.org/flask" alt="Flask logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Flask</span></div>
+            </div>
+          </section><section class="technology-group" aria-labelledby="technology-group-3">
+            <div class="technology-group-title"><h3 id="technology-group-3">Databases &amp; ORM</h3><span class="meta">07 TOOLS</span></div>
+            <div class="technology-grid" role="list">
+              <div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">PG</span><img src="https://cdn.simpleicons.org/postgresql" alt="PostgreSQL logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">PostgreSQL</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">MY</span><img src="https://cdn.simpleicons.org/mysql" alt="MySQL logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">MySQL</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">MG</span><img src="https://cdn.simpleicons.org/mongodb" alt="MongoDB logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">MongoDB</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">SQ</span><img src="https://cdn.simpleicons.org/sqlite" alt="SQLite logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">SQLite</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">FS</span><img src="https://cdn.simpleicons.org/firebase" alt="Firestore logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Firestore</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">SU</span><img src="https://cdn.simpleicons.org/supabase" alt="Supabase logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Supabase</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">PR</span><img src="https://cdn.simpleicons.org/prisma" alt="Prisma ORM logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Prisma ORM</span></div>
+            </div>
+          </section><section class="technology-group" aria-labelledby="technology-group-4">
+            <div class="technology-group-title"><h3 id="technology-group-4">DevOps &amp; Infrastructure</h3><span class="meta">10 TOOLS</span></div>
+            <div class="technology-grid" role="list">
+              <div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">DK</span><img src="https://cdn.simpleicons.org/docker" alt="Docker logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Docker</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">GH</span><img src="https://cdn.simpleicons.org/github" alt="GitHub logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">GitHub</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">GL</span><img src="https://cdn.simpleicons.org/gitlab" alt="GitLab logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">GitLab</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">JK</span><img src="https://cdn.simpleicons.org/jenkins" alt="Jenkins logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Jenkins</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">GA</span><img src="https://cdn.simpleicons.org/githubactions" alt="GitHub Actions logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">GitHub Actions</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">GR</span><img src="https://cdn.simpleicons.org/gitlab" alt="GitLab Runner logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">GitLab Runner</span></div><div class="technology-item" role="listitem"><span class="technology-icon concept" aria-label="Virtualization concept"><svg viewBox="0 0 24 24"><path d="m12 3 8 4-8 4-8-4 8-4Z M4 12l8 4 8-4M4 16l8 4 8-4"/></svg></span><span class="technology-label">Virtualization</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">PX</span><img src="https://cdn.simpleicons.org/proxmox" alt="Proxmox logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Proxmox</span></div><div class="technology-item" role="listitem"><span class="technology-icon concept" aria-label="Cloud Deployment concept"><svg viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 11a3.5 3.5 0 0 0 1 7Z"/><path d="m12 10-2 2h1v3h2v-3h1l-2-2Z"/></svg></span><span class="technology-label">Cloud Deployment</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">N8</span><img src="https://cdn.simpleicons.org/n8n" alt="n8n logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">n8n</span></div>
+            </div>
+          </section><section class="technology-group" aria-labelledby="technology-group-5">
+            <div class="technology-group-title"><h3 id="technology-group-5">Tools &amp; Practices</h3><span class="meta">09 TOOLS</span></div>
+            <div class="technology-grid" role="list">
+              <div class="technology-item" role="listitem"><span class="technology-icon concept" aria-label="Troubleshooting concept"><svg viewBox="0 0 24 24"><path d="M14 6a4 4 0 0 0-5 5L4 16l4 4 5-5a4 4 0 0 0 5-5l-3 3-3-3 2-4Z"/></svg></span><span class="technology-label">Troubleshooting</span></div><div class="technology-item" role="listitem"><span class="technology-icon concept" aria-label="Production Support concept"><svg viewBox="0 0 24 24"><path d="M14 6a4 4 0 0 0-5 5L4 16l4 4 5-5a4 4 0 0 0 5-5l-3 3-3-3 2-4Z"/></svg></span><span class="technology-label">Production Support</span></div><div class="technology-item" role="listitem"><span class="technology-icon concept" aria-label="Application Maintenance concept"><svg viewBox="0 0 24 24"><path d="m12 3 8 4-8 4-8-4 8-4Z M4 12l8 4 8-4M4 16l8 4 8-4"/></svg></span><span class="technology-label">Application Maintenance</span></div><div class="technology-item" role="listitem"><span class="technology-icon concept" aria-label="System Design concept"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 6h8M6 8v8c0 1.1.9 2 2 2h8"/></svg></span><span class="technology-label">System Design</span></div><div class="technology-item" role="listitem"><span class="technology-icon concept" aria-label="Automation Engineering concept"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><circle cx="18" cy="6" r="2"/><path d="M8 6h8M6 8v8c0 1.1.9 2 2 2h8"/></svg></span><span class="technology-label">Automation Engineering</span></div><div class="technology-item" role="listitem"><span class="technology-icon concept" aria-label="Codex concept"><svg viewBox="0 0 24 24"><path d="M8 8 4 12l4 4M16 8l4 4-4 4M14 5l-4 14"/></svg></span><span class="technology-label">Codex</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">CC</span><img src="https://cdn.simpleicons.org/anthropic" alt="Claude Code logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">Claude Code</span></div><div class="technology-item" role="listitem"><span class="technology-icon concept" aria-label="Pi Coding Agent concept"><svg viewBox="0 0 24 24"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="m19 16 .7 2.3L22 19l-2.3.7L19 22l-.7-2.3L16 19l2.3-.7L19 16Z"/></svg></span><span class="technology-label">Pi Coding Agent</span></div><div class="technology-item" role="listitem"><span class="technology-icon"><span class="technology-icon-fallback" aria-hidden="true">OC</span><img src="https://cdn.simpleicons.org/opencode" alt="OpenCode logo" loading="lazy" onload="this.previousElementSibling.hidden=true" onerror="this.hidden=true"></span><span class="technology-label">OpenCode</span></div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" data-od-id="activity" id="activity">
+      <div class="container">
+        <div><p class="eyebrow">CODING ACTIVITY</p><h2>Build history, across platforms.</h2><p class="lead" style="margin-top:20px;">A combined view of my public work across GitHub and GitLab.</p><div class="activity-toolbar"><div class="activity-filters" role="group" aria-label="Activity filter"><button class="activity-filter" data-platform-filter="all" aria-pressed="true">All</button><button class="activity-filter" data-platform-filter="github" aria-pressed="false">GitHub</button><button class="activity-filter" data-platform-filter="gitlab" aria-pressed="false">GitLab</button></div><div class="activity-legend"><span>Less</span><i class="activity-cell"></i><i class="activity-cell" data-level="2"></i><i class="activity-cell" data-level="3"></i><i class="activity-cell" data-level="4"></i><span>More</span></div></div><div id="activity-years" class="activity-years" role="group" aria-label="Contribution year"></div><div id="activity-calendars"><div class="activity-scroll"><div id="activity-grid" class="activity-grid" aria-label="Contribution calendar"></div></div></div><div id="activity-tooltip" class="activity-tooltip" aria-live="polite">Loading activity…</div><div class="activity-summary"><div><strong id="github-total">—</strong><span>GitHub activities</span></div><div><strong id="gitlab-total">—</strong><span>GitLab activities</span></div><div><strong id="combined-total">—</strong><span>Combined activities</span></div></div><div class="hero-cta activity-shortcuts" style="margin-top:28px;"><a class="btn btn-secondary" href="https://github.com/cielhaidir" target="_blank" rel="noreferrer">GitHub ↗</a><a class="btn btn-secondary" href="https://gitlab.com/cielhaidir" target="_blank" rel="noreferrer">GitLab ↗</a></div></div>
+        <div></div>
+      </div>
+    </section>
+
+    <section class="section" data-od-id="cta-strip" style="text-align:center;">
+      <div class="container" style="max-width:600px;"><p class="eyebrow">LET’S BUILD SOMETHING USEFUL</p><h2>Have a problem worth automating?</h2><p class="lead" style="margin:16px auto 32px;">I’m open to software development opportunities, automation work, and thoughtful technical collaboration.</p><a class="btn btn-primary" href="mailto:saidhaidirali987@gmail.com">Start a conversation</a></div>
+    </section>
+  </main>
+
+  <footer class="pagefoot" data-od-id="footer">
+    <div class="container row-between">
+      <span>© 2026 Andi Said Haidir Ali</span>
+      <span class="meta">Full-stack developer · saidhaidirali987@gmail.com</span>
+    </div>
+  </footer>
+<script>
+/* Progressive enhancement: content remains complete when motion is reduced or JS is unavailable. */
+(()=>{
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window)) return;
+  document.documentElement.classList.add('motion-ready');
+
+  const revealItems = [...new Set([
+    ...document.querySelectorAll('.section:not(.hero) .container > *, .card, .log-row, .stat, .technology-item')
+  ])].filter(item => !item.closest('.hero'));
+  revealItems.forEach((item, index) => {
+    item.classList.add('reveal');
+    item.style.setProperty('--reveal-delay', `${(index % 4) * 55}ms`);
+  });
+  const revealObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      revealObserver.unobserve(entry.target);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -24px' });
+  revealItems.forEach(item => revealObserver.observe(item));
+
+  const statSection = document.querySelector('[data-od-id="stats"]');
+  const stats = [...document.querySelectorAll('.stat-num')].map(element => {
+    const textNode = [...element.childNodes].find(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+    return { element, textNode, target: Number.parseInt(textNode?.textContent, 10) };
+  }).filter(stat => stat.textNode && Number.isFinite(stat.target));
+  const count = stat => {
+    const duration = 850;
+    const start = performance.now();
+    stat.textNode.textContent = '0';
+    const tick = now => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      stat.textNode.textContent = String(Math.round(stat.target * eased));
+      if (progress < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  if (statSection) {
+    const statObserver = new IntersectionObserver(entries => {
+      if (!entries[0].isIntersecting) return;
+      stats.forEach(count);
+      statObserver.disconnect();
+    }, { threshold: 0.35 });
+    statObserver.observe(statSection);
+  }
+})();
+
+(async()=>{const tip=document.getElementById('activity-tooltip'),years=document.getElementById('activity-years'),calendars=document.getElementById('activity-calendars');try{const d=await fetch('/data/activity.json').then(r=>r.json()),level=n=>n<=0?0:n<=1?1:n<=3?2:n<=6?3:4,fmt=x=>x.toISOString().slice(0,10);let filter='all';const dates=[...new Set([...Object.keys(d.github),...Object.keys(d.gitlab)])],yearList=[...new Set(dates.map(x=>x.slice(0,4)))].sort().reverse();let year=yearList[0];const render=()=>{calendars.innerHTML='';const selected=year==='all'?yearList:yearList.filter(y=>y===year);let githubTotal=0,gitlabTotal=0;selected.forEach(y=>{const block=document.createElement('div');block.className='activity-year-block';const title=document.createElement('h3');title.className='activity-year-title';title.textContent=y;block.appendChild(title);const scroll=document.createElement('div');scroll.className='activity-scroll';const months=document.createElement('div');months.className='activity-months';['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].forEach(m=>{const span=document.createElement('span');span.textContent=m;months.appendChild(span)});scroll.appendChild(months);const grid=document.createElement('div');grid.className='activity-grid';grid.setAttribute('aria-label',`Contribution calendar ${y}`);const start=new Date(Date.UTC(+y,0,1)),end=new Date(Date.UTC(+y+1,0,0));for(let date=new Date(start);date<=end;date.setUTCDate(date.getUTCDate()+1)){const key=fmt(date),g=d.github[key]||0,l=d.gitlab[key]||0;githubTotal+=g;gitlabTotal+=l;const n=filter==='github'?g:filter==='gitlab'?l:g+l,cell=document.createElement('button');cell.className='activity-cell';cell.dataset.github=g;cell.dataset.gitlab=l;cell.dataset.level=level(n);cell.title=`${key}: ${n} activities`;cell.onclick=()=>tip.textContent=`${key} · GitHub ${g} · GitLab ${l} · Total ${g+l}`;grid.appendChild(cell)}scroll.appendChild(grid);block.appendChild(scroll);calendars.appendChild(block)});document.getElementById('github-total').textContent=githubTotal.toLocaleString();document.getElementById('gitlab-total').textContent=gitlabTotal.toLocaleString();document.getElementById('combined-total').textContent=(githubTotal+gitlabTotal).toLocaleString()};yearList.forEach(y=>{const b=document.createElement('button');b.className='activity-year';b.textContent=y;b.dataset.year=y;b.setAttribute('aria-pressed',y===year);years.appendChild(b)});const all=document.createElement('button');all.className='activity-year activity-year-all';all.textContent='View all';all.dataset.year='all';all.setAttribute('aria-pressed','false');years.appendChild(all);years.onclick=e=>{const b=e.target.closest('.activity-year');if(!b)return;year=b.dataset.year;years.querySelectorAll('.activity-year').forEach(x=>x.setAttribute('aria-pressed',x===b));render()};document.querySelectorAll('[data-platform-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.platformFilter;document.querySelectorAll('[data-platform-filter]').forEach(x=>x.setAttribute('aria-pressed',x===b));render()});render();tip.textContent='Select a day to inspect activity.'}catch(e){tip.textContent='Activity data is temporarily unavailable.'}})();
+</script>
+</body>
+</html>
