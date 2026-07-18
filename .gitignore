@@ -1,0 +1,25 @@
+# Keep this repository limited to the static portfolio artifact
+*
+!.gitignore
+!README.md
+!index.html
+!data/
+!data/activity.json
+!assets/
+!assets/projects/
+!assets/projects/*.png
+
+# Never publish local credentials or runtime data
+.cloudflared/
+.config/
+.hermes/
+.ssh/
+.pi/
+.cache/
+.local/
+.npm/
+open-design/
+*.env
+*.pem
+*.key
+*.tar.gz
