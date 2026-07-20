@@ -3,6 +3,10 @@
 !.gitignore
 !README.md
 !index.html
+!docs.saidhr.my.id/
+!docs.saidhr.my.id/content/
+!docs.saidhr.my.id/content/2026-07-20--security--mfa-backend-security-retest.md
+!docs.saidhr.my.id/content/2026-07-20--security--mfa-eg-live-recheck.md
 !data/
 !data/activity.json
 !assets/
