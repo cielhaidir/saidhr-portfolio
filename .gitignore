@@ -15,6 +15,7 @@
 !assets/projects/*.png
 !scripts/
 !scripts/sync-activity.py
+!scripts/auto-sync-and-push.sh
 
 # Never publish local credentials or runtime data
 .cloudflared/
